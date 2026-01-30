@@ -1062,6 +1062,18 @@ void mr_draw_string_textbuffer(mr_t *mr,
         if (!charcode)
             break;
 
+        // When the textbuffer expands as glyphs are appended, clear the newly exposed columns.
+        // This prevents stale alpha from previous draws leaking as stray pixels.
+        if (buffer_width_increment > 0)
+        {
+            uint8_t *line = mr->buffer;
+            for (uint16_t y = 0; y < buffer_rectangle.height; y++)
+            {
+                memset(line + buffer_rectangle.width, 0, (size_t)buffer_width_increment);
+                line += buffer_pitch;
+            }
+        }
+
         mr_draw_glyph_textbuffer(mr,
                                  &pen,
                                  buffer_pitch);
